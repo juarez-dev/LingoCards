@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.LingoCards" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.LingoCards.Splash" parent="Theme.SplashScreen">
+        <!-- Background splash color -->
+        <item name="windowSplashScreenBackground">@color/splash_bg</item>
+        <!-- Logo -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_lingo_card</item>
+        <!-- Theme applied after of the splash -->
+        <item name="postSplashScreenTheme">@style/Theme.LingoCards</item>
+    </style>
+
+</resources>
