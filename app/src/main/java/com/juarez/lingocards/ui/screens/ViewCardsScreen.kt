@@ -10,16 +10,28 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.juarez.lingocards.ui.components.CardItem
 import com.juarez.lingocards.ui.screens.card_list.CardUiModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 
 @Composable
 fun ViewCardsScreen(
-    cards: List<CardUiModel>
 ) {
+    val context = LocalContext.current
+
+    // Estado con las cartas
+    var cards by remember { mutableStateOf<List<CardUiModel>>(emptyList()) }
+
+
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         Text(

@@ -46,10 +46,7 @@ fun AppNavHost(
         }
 
         composable(Routes.Cards) {
-            ViewCardsScreen( cards = listOf(
-                CardUiModel(1, "arms", "mano", R.drawable.card_arms),
-                CardUiModel(2, "beer", "sermesa", R.drawable.card_beer),
-                CardUiModel(3, "bird", "pajarito", R.drawable.card_bird)) )
+            ViewCardsScreen()
         }
     }
 }
