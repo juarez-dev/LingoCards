@@ -1,4 +1,4 @@
-package com.juarez.lingocards.ui.screens
+package com.juarez.lingocards.ui.screens.register
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +11,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,23 +27,50 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun RegisterScreen(onRegistered: () -> Unit, onCancel: () -> Unit) {
+fun RegisterScreen(
+    viewModel: RegisterViewModel,
+    onRegistered: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
     //Estate of the values
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val confirmPassword = remember { mutableStateOf("") }
 
+    // English note: your User entity requires email
+    val email = remember { mutableStateOf("") }
+
     //Estate of the errors
     val usernameError = remember { mutableStateOf<String?>(null) }
     val passwordError = remember { mutableStateOf<String?>(null) }
     val confirmError = remember { mutableStateOf<String?>(null) }
+    val emailError = remember { mutableStateOf<String?>(null) }
 
     //FocusRequester
     val (usernameFocusRequester, passwordFocusRequester, confirmFocusRequester) = FocusRequester.createRefs()
+    val emailFocusRequester = remember { FocusRequester() }
 
     //KeyboardController -> to hide the keyboard at least
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // English note: react to ViewModel success
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            viewModel.consumeSuccess()
+            onRegistered()
+        }
+    }
+
+    // Sync VM errors -> local errors (keep your existing local error flow)
+    LaunchedEffect(uiState.usernameError, uiState.passwordError, uiState.confirmError, uiState.emailError, uiState.generalError) {
+        usernameError.value = uiState.usernameError
+        passwordError.value = uiState.passwordError
+        confirmError.value = uiState.confirmError
+        emailError.value = uiState.emailError
+        // If you want: show generalError somewhere (toast/snackbar)
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -60,7 +90,7 @@ fun RegisterScreen(onRegistered: () -> Unit, onCancel: () -> Unit) {
                 .focusRequester(usernameFocusRequester),
             isError = usernameError.value != null,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = {passwordFocusRequester.requestFocus()})
+            keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() })
         )
         if (usernameError.value != null) {
             Text(usernameError.value ?: "", color = Color.Red, modifier = Modifier.padding(top = 4.dp))
@@ -86,6 +116,7 @@ fun RegisterScreen(onRegistered: () -> Unit, onCancel: () -> Unit) {
                 }
             )
         )
+
         //Password confirmation
         OutlinedTextField(
             value = confirmPassword.value,
@@ -99,6 +130,30 @@ fun RegisterScreen(onRegistered: () -> Unit, onCancel: () -> Unit) {
                 .focusRequester(confirmFocusRequester),
             isError = confirmError.value != null,
             visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(
+                onNext = { //Hide the keyboard
+                    keyboardController?.hide()
+                    emailFocusRequester.requestFocus()
+                }
+            )
+        )
+        if (confirmError.value != null) {
+            Text(confirmError.value ?: "", color = Color.Red, modifier = Modifier.padding(top = 4.dp))
+        }
+
+        // English note: email field
+        OutlinedTextField(
+            value = email.value,
+            onValueChange = {
+                email.value = it
+                if (it.isNotBlank()) emailError.value = null
+            },
+            label = { Text("Email") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(emailFocusRequester),
+            isError = emailError.value != null,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = { //Hide the keyboard
@@ -106,8 +161,8 @@ fun RegisterScreen(onRegistered: () -> Unit, onCancel: () -> Unit) {
                 }
             )
         )
-        if (confirmError.value != null) {
-            Text(confirmError.value ?: "", color = Color.Red, modifier = Modifier.padding(top = 4.dp))
+        if (emailError.value != null) {
+            Text(emailError.value ?: "", color = Color.Red, modifier = Modifier.padding(top = 4.dp))
         }
 
         Button(
@@ -116,6 +171,7 @@ fun RegisterScreen(onRegistered: () -> Unit, onCancel: () -> Unit) {
                 usernameError.value = null
                 passwordError.value = null
                 confirmError.value = null
+                emailError.value = null
 
                 // validations
                 var valid = true
@@ -136,15 +192,24 @@ fun RegisterScreen(onRegistered: () -> Unit, onCancel: () -> Unit) {
                     confirmError.value = "Las contraseñas no coinciden"
                     valid = false
                 }
+                if (email.value.isBlank()) {
+                    emailError.value = "Introduce un email"
+                    valid = false
+                }
 
                 if (valid) {
                     // user validation
-                    onRegistered()
+                    viewModel.register(
+                        username = username.value,
+                        email = email.value,
+                        password = password.value,
+                        confirmPassword = confirmPassword.value
+                    )
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
         ) {
-            Text("Registrar")
+            Text(if (uiState.isLoading) "Registrando..." else "Registrar")
         }
 
         Button(onClick = onCancel, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {

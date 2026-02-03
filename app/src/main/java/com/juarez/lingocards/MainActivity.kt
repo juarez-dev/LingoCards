@@ -41,7 +41,8 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     AppNavHost(
                         navController = navController,
-                        onExit = { finish() }
+                        onExit = { finish() },
+                        db = db
                     )
                 }
             }
