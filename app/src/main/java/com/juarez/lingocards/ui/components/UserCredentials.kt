@@ -16,17 +16,20 @@ import androidx.compose.ui.unit.dp
 
 // User credentials input fields composable
 @Composable
-fun UserCredentials(modifier: Modifier = Modifier) {
+fun UserCredentials(
+    username: String,
+    password: String,
+    onUsernameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        var username by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = onUsernameChange,
             label = { Text("Usuario") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -34,7 +37,7 @@ fun UserCredentials(modifier: Modifier = Modifier) {
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = onPasswordChange,
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,

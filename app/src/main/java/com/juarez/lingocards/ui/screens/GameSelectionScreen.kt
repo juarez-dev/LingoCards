@@ -25,7 +25,9 @@ fun GameSelectionScreen(
     onViewCards: () -> Unit,
     onViewScores: () -> Unit,
     onExit: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    userId: Long? = null,
+    isGuest: Boolean = false
 ) {
     Scaffold {
         Column(

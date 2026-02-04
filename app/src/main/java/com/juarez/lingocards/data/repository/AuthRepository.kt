@@ -26,4 +26,22 @@ class AuthRepository(
 
         return RegisterResult.Success
     }
+
+    suspend fun login(username: String, password: String): LoginResult {
+        val cleanUsername = username.trim()
+        val user = userDao.getByUsername(cleanUsername) ?: return LoginResult.UserNotFound
+
+        val inputHash = hashPassword(password)
+        return if (inputHash == user.passwordHash) {
+            LoginResult.Success(user.userId)
+        } else {
+            LoginResult.WrongPassword
+        }
+    }
+}
+
+sealed class LoginResult {
+    data class Success(val userId: Long) : LoginResult()
+    data object UserNotFound : LoginResult()
+    data object WrongPassword : LoginResult()
 }

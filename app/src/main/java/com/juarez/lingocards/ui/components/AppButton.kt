@@ -8,9 +8,14 @@ import androidx.compose.ui.Modifier
 
 // Reusable button composable
 @Composable
-fun AppButton(text: String, onClick: () -> Unit) {
+fun AppButton(
+    text: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(text = text)

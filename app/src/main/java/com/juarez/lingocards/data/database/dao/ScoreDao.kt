@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.juarez.lingocards.data.database.entities.Score
-import com.juarez.lingocards.ui.screens.RankingRow
+import com.juarez.lingocards.data.dto.RankingRow
 
 @Dao
 interface ScoreDao {
@@ -26,11 +26,15 @@ interface ScoreDao {
     suspend fun getBestForUser(userId: Long): Int?
 
     @Query("""
-    SELECT u.username AS username, s.score AS score, s.createdAt AS createdAt
+    SELECT 
+        u.username AS username,
+        MAX(s.score) AS bestScore,
+        MIN(s.createdAt) AS bestAt
     FROM scores s
     INNER JOIN users u ON u.userId = s.userOwnerId
-    ORDER BY s.score DESC, s.createdAt ASC
+    GROUP BY s.userOwnerId
+    ORDER BY bestScore DESC, bestAt ASC
     LIMIT :limit
 """)
-    suspend fun getTopGlobal(limit: Int = 10): List<RankingRow>
+    suspend fun getTopPlayers(limit: Int = 20): List<RankingRow>
 }
