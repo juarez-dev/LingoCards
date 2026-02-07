@@ -91,27 +91,30 @@ fun AppNavHost(
         }
 
         composable(Routes.Game) {
-            // 1) Crear el repo del juego (ahora mismo puedes pasarle una lista dummy)
-            //    Lo ideal: que el repo devuelva List<GameCard> desde Room.
-            val gameCards = remember {
-                listOf(
-                    GameCard(1, "Perro", "Hund", "card_dog"),
-                    GameCard(2, "Gato", "Katze", "card_cat"),
-                    GameCard(3, "Cerveza", "Bier", "card_beer"),
-                    GameCard(4, "Café", "Kaffee", "card_cafe"),
-                    // añade unas cuantas más para que no repita tanto
+
+            val cardDao = remember(db) { db.cardDao() }
+
+            val factory = remember {
+                GameViewModelFactory(
+                    cardDao = cardDao,
+                    totalQuestions = 20
                 )
             }
 
-            val factory = remember { GameViewModelFactory(gameCards, totalQuestions = 20) }
             val vm: GameViewModel = viewModel(factory = factory)
 
             GameScreen(
                 viewModel = vm,
                 isGuest = isGuest,
-                onExit = { navController.popBackStack(Routes.GameSelection, inclusive = false) }
+                onExit = {
+                    navController.popBackStack(
+                        Routes.GameSelection,
+                        inclusive = false
+                    )
+                }
             )
         }
+
     }
 }
 
