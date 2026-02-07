@@ -25,7 +25,7 @@ fun CardItem(
     // The card has a front and back text along with an image
     frontText: String,
     backText: String,
-    imageResId: Int,
+    imageResId: Int?,
     frontColor: Color = Purple40,
     backColor: Color = PurpleGrey80,
     modifier: Modifier = Modifier
@@ -84,31 +84,35 @@ fun CardItem(
 }
 
 @Composable
-private fun FrontFace(text: String, imageResId: Int) {
+private fun FrontFace(text: String, imageResId: Int?) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Image(
-            painter = painterResource(id = imageResId),
-            contentDescription = null,
-            modifier = Modifier.size(90.dp)
-        )
+        if (imageResId != null && imageResId != 0) {
+            Image(
+                painter = painterResource(id = imageResId),
+                contentDescription = null,
+                modifier = Modifier.size(90.dp)
+            )
+        }
         Text(text = text, style = MaterialTheme.typography.titleMedium)
     }
 }
 
 @Composable
-private fun BackFace(text: String, imageResId: Int) {
+private fun BackFace(text: String, imageResId: Int?) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Image(
-            painter = painterResource(id = imageResId),
-            contentDescription = null,
-            modifier = Modifier.size(90.dp)
-        )
+        if (imageResId != null && imageResId != 0) {
+            Image(
+                painter = painterResource(id = imageResId),
+                contentDescription = null,
+                modifier = Modifier.size(90.dp)
+            )
+        }
         Text(text = text, style = MaterialTheme.typography.titleMedium)
     }
 }

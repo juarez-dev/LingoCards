@@ -19,7 +19,7 @@ import com.juarez.lingocards.data.database.entities.User
         User::class,
         Score::class
     ],
-    version = 1
+    version = 3
 )
 abstract class AppDatabase : RoomDatabase() {
     // Declaration of DAOs

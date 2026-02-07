@@ -13,6 +13,7 @@ class LingoCardsApp : Application() {
 
         Room.databaseBuilder(applicationContext, AppDatabase::class.java, "lingocards-db")
             .createFromAsset("lingocards.db")
+            .fallbackToDestructiveMigration()
             .build()
     }
 

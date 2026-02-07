@@ -11,19 +11,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.juarez.lingocards.R
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.juarez.lingocards.ui.components.AppButton
-import com.juarez.lingocards.ui.components.CardItem // si lo tienes ya
+import com.juarez.lingocards.ui.components.CardItem
 
 @Composable
 fun GameScreen(
-    userId: Long? = null,
-    isGuest: Boolean = false,
-    onExit: () -> Unit = {}
+    viewModel: GameViewModel,
+    isGuest: Boolean,
+    onExit: () -> Unit
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold { padding ->
         Column(
             modifier = Modifier
@@ -33,36 +38,78 @@ fun GameScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Header
             Text(
-                text = if (isGuest) "Modo invitado" else "Jugador: $userId",
+                text = "Puntuación: ${state.xScore}  •  Racha: ${state.currentStreak} (max ${state.maxStreak})",
                 style = MaterialTheme.typography.titleMedium
             )
-
-            // --- Card area (placeholder) ---
-            // Si tu CardItem requiere imageResId, pon uno dummy o crea una versión sin imagen.
-            CardItem(
-                frontText = "Perro",
-                backText = "Hund",
-                imageResId = R.drawable.card_dog, // placeholder (luego lo conectamos bien)
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // --- Options (dummy) ---
-            AppButton("Hund") { /* TODO */ }
-            AppButton("Katze") { /* TODO */ }
-            AppButton("Haus") { /* TODO */ }
-            AppButton("Wasser") { /* TODO */ }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             Text(
-                text = "Puntuación: 0   •   Pregunta 1/10",
+                text = "Pregunta ${state.questionIndex + 1}/${state.totalQuestions}",
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            // Exit (optional)
+            Spacer(Modifier.height(4.dp))
+
+            // If finished -> show end screen
+            if (state.finished) {
+                Text(
+                    text = "¡Partida terminada!",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+                Text(
+                    text = "Puntuación final: ${state.finalScore}",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+
+                if (isGuest) {
+                    Text(
+                        text = "Modo invitado: no se guardan puntuaciones",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
+                AppButton("Salir") { onExit() }
+                return@Column
+            }
+
+            val card = state.currentCard
+            if (card != null) {
+                val context = LocalContext.current
+
+                val imageResId: Int? = remember(card.imageResName) {
+                    val name = card.imageResName?.trim().orEmpty()
+                    if (name.isBlank()) null
+                    else {
+                        val id = context.resources.getIdentifier(name, "drawable", context.packageName)
+                        if (id == 0) null else id
+                    }
+                }
+
+                CardItem(
+                    frontText = card.frontText,
+                    backText = card.backText,
+                    imageResId = imageResId,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Text("Cargando carta...")
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Options
+            state.options.forEach { option ->
+                AppButton(
+                    text = option,
+                    enabled = !state.locked
+                ) {
+                    viewModel.onAnswerSelected(option)
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
             AppButton("Salir") { onExit() }
         }
     }

@@ -12,7 +12,10 @@ import androidx.navigation.compose.composable
 import com.juarez.lingocards.data.database.AppDatabase
 import com.juarez.lingocards.data.repository.AuthRepository
 import com.juarez.lingocards.ui.screens.*
+import com.juarez.lingocards.ui.screens.game.GameCard
 import com.juarez.lingocards.ui.screens.game.GameScreen
+import com.juarez.lingocards.ui.screens.game.GameViewModel
+import com.juarez.lingocards.ui.screens.game.GameViewModelFactory
 import com.juarez.lingocards.ui.screens.main.MainScreen
 import com.juarez.lingocards.ui.screens.main.MainViewModel
 import com.juarez.lingocards.ui.screens.main.MainViewModelFactory
@@ -87,9 +90,25 @@ fun AppNavHost(
         }
 
         composable(Routes.Game) {
+            // 1) Crear el repo del juego (ahora mismo puedes pasarle una lista dummy)
+            //    Lo ideal: que el repo devuelva List<GameCard> desde Room.
+            val gameCards = remember {
+                listOf(
+                    GameCard(1, "Perro", "Hund", "card_dog"),
+                    GameCard(2, "Gato", "Katze", "card_cat"),
+                    GameCard(3, "Cerveza", "Bier", "card_beer"),
+                    GameCard(4, "Café", "Kaffee", "card_cafe"),
+                    // añade unas cuantas más para que no repita tanto
+                )
+            }
+
+            val factory = remember { GameViewModelFactory(gameCards, totalQuestions = 20) }
+            val vm: GameViewModel = viewModel(factory = factory)
+
             GameScreen(
-                userId = loggedUserId,
-                isGuest = isGuest
+                viewModel = vm,
+                isGuest = isGuest,
+                onExit = { navController.popBackStack(Routes.GameSelection, inclusive = false) }
             )
         }
     }
