@@ -1,4 +1,4 @@
-package com.juarez.lingocards.ui.screens
+package com.juarez.lingocards.ui.screens.view_card_screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import com.juarez.lingocards.ui.components.CardItem
 import com.juarez.lingocards.ui.screens.card_list.CardUiModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.juarez.lingocards.LingoCardsApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,41 +30,11 @@ import kotlinx.coroutines.withContext
 @Composable
 fun ViewCardsScreen() {
     val context = LocalContext.current
+    val vm: ViewCardsViewModel = viewModel(
+        factory = ViewCardsViewModelFactory(context.applicationContext as android.app.Application)
+    )
 
-    var cards by remember { mutableStateOf<List<CardUiModel>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var error by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        try {
-            val app = context.applicationContext as LingoCardsApp
-            val dao = app.db.cardDao()
-
-            val rows = withContext(Dispatchers.IO) {
-                dao.getAllCardsEsDe()
-            }
-
-            cards = rows.map { r ->
-                val resId = context.resources.getIdentifier(
-                    r.imageResId,       // nombre en drawable, ej: "cat_01"
-                    "drawable",
-                    context.packageName
-                )
-
-                CardUiModel(
-                    id = r.id,
-                    frontText = r.frontText,
-                    backText = r.backText,
-                    imageResId = resId // puede ser 0 si no existe
-                )
-            }
-
-            isLoading = false
-        } catch (t: Throwable) {
-            isLoading = false
-            error = t.message ?: "Error cargando cartas"
-        }
-    }
+    val state by vm.uiState.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
@@ -72,16 +44,13 @@ fun ViewCardsScreen() {
         )
 
         when {
-            isLoading -> {
-                Text(
-                    text = "Cargando...",
-                    modifier = Modifier.padding(16.dp)
-                )
+            state.isLoading -> {
+                Text("Cargando...", modifier = Modifier.padding(16.dp))
             }
 
-            error != null -> {
+            state.error != null -> {
                 Text(
-                    text = "❌ $error",
+                    text = state.error!!,
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -91,7 +60,7 @@ fun ViewCardsScreen() {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(cards, key = { it.id }) { c ->
+                    items(state.cards, key = { it.id }) { c: CardUiModel ->
                         CardItem(
                             frontText = c.frontText,
                             backText = c.backText,

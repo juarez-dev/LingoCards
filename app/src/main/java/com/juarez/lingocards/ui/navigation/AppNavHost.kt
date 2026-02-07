@@ -22,6 +22,7 @@ import com.juarez.lingocards.ui.screens.main.MainViewModelFactory
 import com.juarez.lingocards.ui.screens.register.RegisterScreen
 import com.juarez.lingocards.ui.screens.register.RegisterViewModel
 import com.juarez.lingocards.ui.screens.register.RegisterViewModelFactory
+import com.juarez.lingocards.ui.screens.view_card_screen.ViewCardsScreen
 
 @Composable
 fun AppNavHost(

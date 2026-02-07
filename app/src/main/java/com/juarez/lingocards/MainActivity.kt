@@ -22,14 +22,6 @@ class MainActivity : ComponentActivity() {
 
         val db = (application as LingoCardsApp).db
 
-        /*val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "lingocards-db.db")
-            .createFromAsset("database/lingocards.db")
-            .build()
-        lifecycleScope.launch(Dispatchers.IO) {
-            db.openHelper.writableDatabase  // fuerza creación/apertura del archivo
-            val f = applicationContext.getDatabasePath("database-name")
-            Log.d("DB_CHECK", "exists=${f.exists()} path=${f.absolutePath}")
-        }*/
         WindowCompat.setDecorFitsSystemWindows(window, true)
 
         setContent {
